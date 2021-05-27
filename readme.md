@@ -235,11 +235,11 @@ CH1 = ADC conversion "callback"
 
 ![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint168.jpg)
 
-Check ADC value by debug mode.
+Check ADC value by debug mode. The value should be changing and almost same level as the voltage drop.
 
 	VoutMeasured = HAL_ADCEx_InjectedGetValue(&hadc2, ADC_INJECTED_RANK_1);
 	
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/ADC_QuickCheck.png)
 	
 Now,it is known these facts from this experiment:  
 
