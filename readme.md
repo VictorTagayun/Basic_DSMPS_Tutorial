@@ -39,7 +39,7 @@ Check which code will yield the fastest GPIO speed, pls refer to GPIO Speed Test
 
 GPIO Set (HIGH) / Reset (LOW) in main while loop. Check the waveform:   
 
-HAL and LL Library
+*HAL and LL Library*
 
 	// HAL = 625 kHz
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);  
@@ -63,7 +63,7 @@ HAL and LL Library
 
 ![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint159.jpg)
 
-Register Level Access
+*Register Level Access*
 
 	// HAL / LL  = 2.94Mhz
 	GPIOC->BSRR = (1 << 9); // Set
@@ -185,9 +185,9 @@ After adding this pull up resistor, check ADC pin waveform.
 
 ![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint165.jpg)
 	
-Need 2 I/Os for ADC interrupt, 1 IO for ADC interrupt service routine (blocking mode) and 1 IO for ADC conversion "callback" (non-blocking mode).  
+Need 2 I/Os to check the timing for ADC interrupt (if ever it goes inside it), 1 IO for ADC interrupt service routine (blocking mode) and 1 IO for ADC conversion "callback" (non-blocking mode).  
 
-ADC interrupt service routine   
+*ADC interrupt service routine*   
 
 	/**
 	  * @brief This function handles ADC1 and ADC2 interrupts.
@@ -207,7 +207,7 @@ ADC interrupt service routine
 	  /* USER CODE END ADC1_2_IRQn 1 */
 	}  
 	
-ADC conversion "callback"   
+*ADC conversion "callback"*   
 
 	/**
 	  * @brief  Injected conversion complete callback in non blocking mode
@@ -233,7 +233,7 @@ CH1 = ADC Pin
 CH1 = ADC interrupt service routine  
 CH1 = ADC conversion "callback"   
 
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint168.jpg)
 
 Check ADC value by debug mode.
 
@@ -241,12 +241,12 @@ Check ADC value by debug mode.
 	
 ![]()
 	
-Now,it is known that these facts from this experiment:  
+Now,it is known these facts from this experiment:  
 
-	1. Where exactly in time the ADC is acquiring and using a GPIO is not a good way to check where is that exactl location in time
-	2. The interrupt is triggering
-	3. ADC is acquiring and collecting correct data
-	4. The Interrupt is within 10uS
+1. Where exactly in time the ADC is acquiring and using a GPIO is not a good way to check where is that exactl location in time
+2. The interrupt is triggering
+3. ADC is acquiring and collecting correct data
+4. The Interrupt is within 10uS
 
 The Pull up resistor can now be replaced with the RC circuit intead of power devices.  
 
@@ -254,46 +254,47 @@ Set different duty cycle and check the measured value, at initial setting of 50%
 
 	pCompareCfg.CompareValue = 46080/2;
 	
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint171.jpg)
 	
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/VoutDebug-1-2.png)
 	
 at 1/4 duty  
 
 	pCompareCfg.CompareValue = 46080/4;
 	
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint172.jpg)
 	
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/VoutDebug-1-4.png)
 	
 at 3/4 duty  
 
 	pCompareCfg.CompareValue = (46080/4) * 3;
 	
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint173.jpg)
 	
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/VoutDebug-3-4.png)
 	
+Notice above waveforms that CH3 and CH4 became wider because we started reading the ADC.
 	
-There is some offset from the calculated values, it could be one of the ff:  
+Also, there are some offsets from the calculated values, it could be one of the ff:  
 
-	* The GPIO output is not really reaching 3.3V
-	* Constant offset is there
+* The GPIO output is not really reaching 3.3V
+* Constant offset is there
 	
 At this moment, offset is not an issue.
+
 
 ### Simple PID to close the feedback loop
 
 Set VoutTarget   
 	
-	volatile uint16_t VoutTarget = 1000;
+	volatile uint16_t VoutTarget = 2500; // haven't calculated what is the resulting Vout
 	
-Calculate PWM duty cycle   
+Calculate PWM duty cycle by PID   
 
 	errorProp = (Kp * Verror) >> 5;
 	errorIntgr = errorIntgr + ((Ki * Verror) >> 4);
 	errorDiff = Verror >> Kd;
-
 	pid_out =   errorProp + errorIntgr + errorDiff;
 	
 Set the PWM duty cycle to Comparator1   
@@ -305,30 +306,29 @@ Set the PWM duty cycle to Comparator1
 
 Even a simple RC network will exhibit a feedback oscilations depending on the PID formula.
 
-PID formula.   
+*Other _PI_ formula (Using only Kp and Ki)*   
 
 	seterr = (-Kp * Verror) / 200;
 	Int_term_Buck = Int_term_Buck + ((-Ki * Verror) / 200);
 	pid_out = seterr + Int_term_Buck;
 	
-	Start up  
-![Start up]()  
+Start up  
+![Start up](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint175.jpg)  
 	
-	Normal Operation   
-![Normal Operation ]()  
+Normal Operation   
+![Normal Operation ](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint174.jpg)  
 	
-Previous PID formula  
+*Previous PID formula*   
 
 	errorProp = (Kp * Verror) >> 5;
 	errorIntgr = errorIntgr + ((Ki * Verror) >> 4);
 	errorDiff = Verror >> Kd;
-
 	pid_out =   errorProp + errorIntgr + errorDiff;
 	
-	Start up  
+Start up  
 ![Start up]()  
 	
-	Normal Operation   
+Normal Operation   
 ![Normal Operation ]()  
 	
 ### Going further
