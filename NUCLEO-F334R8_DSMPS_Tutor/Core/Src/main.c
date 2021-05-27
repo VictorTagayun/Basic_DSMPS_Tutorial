@@ -40,11 +40,31 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc2;
+
 HRTIM_HandleTypeDef hhrtim1;
 
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+
+volatile uint16_t VoutMeasured, VoutTarget = 1000;
+volatile int32_t Verror;
+
+volatile int32_t seterr, pid_out, pid_out_last, pid_out_diff;
+volatile int32_t error, errorProp;
+volatile int32_t last_error;
+volatile int32_t errorSum;
+volatile int32_t errorRate;
+
+/* Set Proportional and Integral constant terms*/
+static uint16_t Kp = 10;
+static uint16_t Ki = 100;
+static uint16_t Kd = 100;
+
+static int32_t Int_term_Buck;
+
+volatile int32_t error, errorProp, errorIntgr, errorDiff;
 
 /* USER CODE END PV */
 
@@ -53,6 +73,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_HRTIM1_Init(void);
+static void MX_ADC2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -92,7 +113,17 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_HRTIM1_Init();
+  MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_HRTIM_WaveformOutputStart(&hhrtim1, HRTIM_OUTPUT_TE1);
+  HAL_HRTIM_WaveformCounterStart(&hhrtim1, HRTIM_TIMERID_TIMER_E);
+
+  /* Run the ADC calibration in single-ended mode */
+  HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+
+  /* Start ADC1 Injected Conversions with Interrupt*/
+  HAL_ADCEx_InjectedStart_IT(&hadc2);
 
   /* USER CODE END 2 */
 
@@ -100,6 +131,40 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+	  /*
+	   * HAL and LL library
+	   */
+
+	  // HAL = 705 kHz
+//	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+
+	  // HAL = 878 KHz
+//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+
+	  // LL = 720 kHz
+//	  LL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+
+	  // LL = 1.1059MHz
+//	  LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_9);
+//	  LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_9);
+
+
+	  /*
+	   *  Register level access
+	   */
+
+	  // LL  = 2.77Mhz
+	  // HAL = 3.00Mhz
+//	  GPIOC->BSRR = (1 << 9); // Set
+//	  GPIOC->BSRR = (1 << 25); // Reset
+
+	  // HAL = 3.00Mhz
+	  // LL  = 2.77Mhz
+//	  GPIOC->BSRR = (1 << 9); // Set
+//	  GPIOC->BRR = (1 << 9); // Reset
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -144,12 +209,72 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_HRTIM1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_HRTIM1|RCC_PERIPHCLK_ADC12;
+  PeriphClkInit.Adc12ClockSelection = RCC_ADC12PLLCLK_DIV1;
   PeriphClkInit.Hrtim1ClockSelection = RCC_HRTIM1CLK_PLLCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC2_Init(void)
+{
+
+  /* USER CODE BEGIN ADC2_Init 0 */
+
+  /* USER CODE END ADC2_Init 0 */
+
+  ADC_InjectionConfTypeDef sConfigInjected = {0};
+
+  /* USER CODE BEGIN ADC2_Init 1 */
+
+  /* USER CODE END ADC2_Init 1 */
+  /** Common config
+  */
+  hadc2.Instance = ADC2;
+  hadc2.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+  hadc2.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc2.Init.ContinuousConvMode = DISABLE;
+  hadc2.Init.DiscontinuousConvMode = DISABLE;
+  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc2.Init.NbrOfConversion = 1;
+  hadc2.Init.DMAContinuousRequests = DISABLE;
+  hadc2.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc2.Init.LowPowerAutoWait = DISABLE;
+  hadc2.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
+  if (HAL_ADC_Init(&hadc2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Injected Channel
+  */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_13;
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
+  sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
+  sConfigInjected.InjectedNbrOfConversion = 1;
+  sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_61CYCLES_5;
+  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONV_EDGE_RISING;
+  sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJECCONV_HRTIM_TRG2;
+  sConfigInjected.AutoInjectedConv = DISABLE;
+  sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
+  sConfigInjected.QueueInjectedContext = DISABLE;
+  sConfigInjected.InjectedOffset = 0;
+  sConfigInjected.InjectedOffsetNumber = ADC_OFFSET_NONE;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc2, &sConfigInjected) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC2_Init 2 */
+
+  /* USER CODE END ADC2_Init 2 */
+
 }
 
 /**
@@ -164,6 +289,7 @@ static void MX_HRTIM1_Init(void)
 
   /* USER CODE END HRTIM1_Init 0 */
 
+  HRTIM_ADCTriggerCfgTypeDef pADCTriggerCfg = {0};
   HRTIM_TimeBaseCfgTypeDef pTimeBaseCfg = {0};
   HRTIM_TimerCfgTypeDef pTimerCfg = {0};
   HRTIM_CompareCfgTypeDef pCompareCfg = {0};
@@ -184,6 +310,12 @@ static void MX_HRTIM1_Init(void)
     Error_Handler();
   }
   if (HAL_HRTIM_PollForDLLCalibration(&hhrtim1, 10) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  pADCTriggerCfg.UpdateSource = HRTIM_ADCTRIGGERUPDATE_TIMER_E;
+  pADCTriggerCfg.Trigger = HRTIM_ADCTRIGGEREVENT24_TIMERE_CMP4;
+  if (HAL_HRTIM_ADCTriggerConfig(&hhrtim1, HRTIM_ADCTRIGGER_2, &pADCTriggerCfg) != HAL_OK)
   {
     Error_Handler();
   }
@@ -227,6 +359,14 @@ static void MX_HRTIM1_Init(void)
   }
   pCompareCfg.CompareValue = 46080/2;
   if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_3, &pCompareCfg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  pCompareCfg.CompareValue = 46080 - 1000/2;
+  pCompareCfg.AutoDelayedMode = HRTIM_AUTODELAYEDMODE_REGULAR;
+  pCompareCfg.AutoDelayedTimeout = 0x0000;
+
+  if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_4, &pCompareCfg) != HAL_OK)
   {
     Error_Handler();
   }
@@ -303,7 +443,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -318,16 +464,64 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  /*Configure GPIO pins : PC6 PC9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
+
+
+/**
+  * @brief  Injected conversion complete callback in non blocking mode
+  * @param  hadc ADC handle
+  * @retval None
+  */
+void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hadc);
+
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_ADCEx_InjectedConvCpltCallback could be implemented in the user file
+  */
+
+  GPIOB->BSRR = (1 << 8); // Set
+
+  VoutMeasured = HAL_ADCEx_InjectedGetValue(&hadc2, ADC_INJECTED_RANK_1);
+  Verror =  (uint16_t ) VoutMeasured - (uint16_t) VoutTarget;
+
+//	seterr = (-Kp * Verror) / 200;
+//	Int_term_Buck = Int_term_Buck + ((-Ki * Verror) / 200);
+//	pid_out = seterr + Int_term_Buck;
+//
+//	if (pid_out > 4800)
+//		pid_out = 45000;
+//	if (pid_out < 100)
+//		pid_out = 100;
+
+	errorProp = (Kp * Verror) >> 5;
+	errorIntgr = errorIntgr + ((Ki * Verror) >> 4);
+	errorDiff = Verror >> Kd;
+
+	pid_out =   errorProp + errorIntgr + errorDiff;
+
+  __HAL_HRTIM_SETCOMPARE(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_3, pid_out);
+
+  GPIOB->BSRR = (1 << 24); // Reset
+
+}
 
 /* USER CODE END 4 */
 
