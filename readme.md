@@ -4,28 +4,28 @@
 
 Will DO  
 
-	Teach how to setup the HRTIMer, its freq, PLL etc.  
-	Use the GPIO for timing and debugging  
-	How to setup period and duty cycle control  
-	Use RC circuit as a simulated SMPS circuits  
-	Observe "exactly" where in time the ADC is acquiring data  
-	Trigger the ADC by HRTIMer  
-	Interrupt by HRTIMer and/or ADC  
-	Check where exactly in time the acquisition of ADC by using single external resistor     
+* Teach how to setup the HRTIMer, its freq, PLL etc.  
+* Use the GPIO for timing and debugging  
+* How to setup period and duty cycle control  
+* Use RC circuit as a simulated SMPS circuits  
+* Observe "exactly" where in time the ADC is acquiring data  
+* Trigger the ADC by HRTIMer  
+* Interrupt by HRTIMer and/or ADC  
+* Check where exactly in time the acquisition of ADC by using single external resistor     
 
 Will not do  
 
-	Teach about the basic of SMPS, it theory, operations, formulas, etc
-	Teach about feedback control theory
-	Use actual Power devices to convert power
-	Give overview of the evaluation board
+* Teach about the basic of SMPS, it theory, operations, formulas, etc
+* Teach about feedback control theory
+* Use actual Power devices to convert power
+* Give overview of the evaluation board
 	
 This tutorial will use NUCLEO-F334R8 as the development board where the external Freq used is 8MHz, while the MCU has a maximum System Freq of 72MHz.
 
 
 ### Setup RCC
 
-With 8Mhz input clock and Max 72Mhz of system freq we set the ff:
+With 8Mhz input clock and Max 72Mhz of system freq, set the ff:
 
 PLL = 8 (default and cannot change)  
 PLLMUL = 9  
@@ -44,24 +44,24 @@ HAL and LL Library
 	// HAL = 625 kHz
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);  
 
-	![]()
+	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint157.jpg)
 
 	// HAL = 806 KHz
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);  
 
-	![]() 
+	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint161.jpg) 
 
 	// LL = 625 kHz
 	LL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);  
 
-	![]()
+	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint158.jpg)
 
 	// LL = 1.09MHz
 	LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_9);
 	LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_9);  
 
-	![]()
+	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint159.jpg)
 
 Register Level Access
 
@@ -69,15 +69,13 @@ Register Level Access
 	GPIOC->BSRR = (1 << 9); // Set
 	GPIOC->BSRR = (1 << 25); // Reset;  
 
-	![]()
-
 	// HAL / LL  = 2.94Mhz
 	GPIOC->BSRR = (1 << 9); // Set
 	GPIOC->BRR = (1 << 9); // Reset;  
 
-	![]() 
+	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint160.jpg) 
 
-As expected, toggle commands will take longer due to the fact, that it reads first before toggling. So we will use this code for toggling I/O for debug use.
+As expected, toggle commands will take longer due to the fact, that it reads first before toggling. Also, using register level will be faster. So this code below will be used for setting HIGH and LOW the GPIO for debug use.
 
 	GPIOC->BSRR = (1 << 9); // Set
 	GPIOC->BRR = (1 << 9); // Reset;  
@@ -126,11 +124,11 @@ Set the IO speed to slow, so we dont generate too much noise.
 	
 By Comparison, if the speed is "HIGH", see below noise on the output.
 
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint162.jpg)
 
 Here the speed is "LOW"
 
-![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint164.jpg)
 
 In the main.c we start the HRTIMer counter and enable its GPIO output. Check the output waveform.     
 
@@ -140,10 +138,10 @@ In the main.c we start the HRTIMer counter and enable its GPIO output. Check the
 
 ## Setup ADC and trigger it by HRTIMer
 
-The ADC should acquire date when there is no switching happening to avoid noise. There is swithing in the ff. conditions:
+The ADC should acquire date when there is no switching happening to avoid noise. There are swicthing in these ff. conditions:  
 
-	* When the HRTIMer reach period, this is when the output is set (HIGH).
-	* When the HRTIMer reach Comparator1 "OR" Comparator3, this is when the output is reset (LOW).
+* When the HRTIMer reach period, this is when the output is set (HIGH).
+* When the HRTIMer reach Comparator1 "OR" Comparator3, this is when the output is reset (LOW).
 
 Previously, it is set that 1000 counts before the end of the period is the MAX duty cycle. So between 1000 counts before and period, we can set the ADC acquisition. We can use Comparator4 for that purpose.
 
@@ -177,9 +175,15 @@ Start ADC calibration, conversion with Interrupt enabled:
 	/* Start ADC1 Injected Conversions with Interrupt*/
 	HAL_ADCEx_InjectedStart_IT(&hadc2);
 	
-Check ADC pin waveform.   
+To check the "absolute" time where the ADC is converting, it may be needed to use a pullup resistor from a 3V3 source to the ADC pin. 
+The 3V3 source could be another IO or Vcc itselft as shown below. 
+It should be noted than when the switch of the ADC starts to close, the voltage will drop due to the internal capacitor charging.
 
-	![]()
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/STM32-ADC-Analog-Input-Resistance-Limit-ADC-Tutorial.webp)
+
+After adding this pull up resistor, check ADC pin waveform.   
+
+	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint165.jpg)
 	
 Need 2 I/Os for ADC interrupt, 1 IO for ADC interrupt service routine (blocking mode) and 1 IO for ADC conversion "callback" (non-blocking mode).  
 
