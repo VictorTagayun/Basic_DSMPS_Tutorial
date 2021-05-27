@@ -3,6 +3,7 @@
 ### What will this tutorial will do and not do
 
 Will DO  
+
 	Teach how to setup the HRTIMer, its freq, PLL etc.  
 	Use the GPIO for timing and debugging  
 	How to setup period and duty cycle control  
@@ -13,21 +14,24 @@ Will DO
 	Check where exactly in time the acquisition of ADC by using single external resistor     
 
 Will not do  
+
 	Teach about the basic of SMPS, it theory, operations, formulas, etc
 	Teach about feedback control theory
 	Use actual Power devices to convert power
 	Give overview of the evaluation board
 	
-We will use NUCLEO-F334R8 as the development board where the external Freq used is 8MHz, while the IC has a maximum System Freq of 72MHz
+This tutorial will use NUCLEO-F334R8 as the development board where the external Freq used is 8MHz, while the MCU has a maximum System Freq of 72MHz.
+
 
 ### Setup RCC
 
 With 8Mhz input clock and Max 72Mhz of system freq we set the ff:
 
 PLL = 8 (default and cannot change)  
-PLLMUL = 9 
+PLLMUL = 9  
 
 	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;  
+
 
 ### Setup GPIOC9 and check and compare SPEED  
 
@@ -37,23 +41,23 @@ GPIO Set (HIGH) / Reset (LOW) in main while loop. Check the waveform:
 
 HAL and LL Library
 
-	// HAL = 705 kHz
+	// HAL = 625 kHz
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);  
 
 	![]()
 
-	// HAL = 878 KHz
+	// HAL = 806 KHz
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);  
 
 	![]() 
 
-	// LL = 720 kHz
+	// LL = 625 kHz
 	LL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);  
 
 	![]()
 
-	// LL = 1.1059MHz
+	// LL = 1.09MHz
 	LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_9);
 	LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_9);  
 
@@ -61,15 +65,13 @@ HAL and LL Library
 
 Register Level Access
 
-	// LL  = 2.77Mhz
-	// HAL = 3.00Mhz
+	// HAL / LL  = 2.94Mhz
 	GPIOC->BSRR = (1 << 9); // Set
 	GPIOC->BSRR = (1 << 25); // Reset;  
 
 	![]()
 
-	// HAL = 3.00Mhz
-	// LL  = 2.77Mhz
+	// HAL / LL  = 2.94Mhz
 	GPIOC->BSRR = (1 << 9); // Set
 	GPIOC->BRR = (1 << 9); // Reset;  
 
@@ -79,6 +81,7 @@ As expected, toggle commands will take longer due to the fact, that it reads fir
 
 	GPIOC->BSRR = (1 << 9); // Set
 	GPIOC->BRR = (1 << 9); // Reset;  
+
 
 ## Setup HRTIMer
 
@@ -234,18 +237,20 @@ Check ADC value by debug mode.
 	
 	![]()
 	
-Now we know these data from this experiment:
+Now,it is known that these facts from this experiment:  
 
 	1. Where exactly in time the ADC is acquiring and using a GPIO is not a good way to check where is that exactl location in time
 	2. The interrupt is triggering
 	3. ADC is acquiring and collecting correct data
 	4. The Interrupt is within 10uS
 
-The Pull up resistor can now be replaced with the RC circuit intead of power devices.
+The Pull up resistor can now be replaced with the RC circuit intead of power devices.  
 
 Set different duty cycle and check the measured value, at initial setting of 50% duty, please remember that it is a 12-bit ADC and the full scale should be 4096.     
 
 	pCompareCfg.CompareValue = 46080/2;
+	
+	![]()
 	
 	![]()
 	
@@ -255,11 +260,16 @@ at 1/4 duty
 	
 	![]()
 	
+	![]()
+	
 at 3/4 duty  
 
 	pCompareCfg.CompareValue = (46080/4) * 3;
 	
 	![]()
+	
+	![]()
+	
 	
 There is some offset from the calculated values, it could be one of the ff:  
 
