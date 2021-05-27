@@ -44,24 +44,24 @@ HAL and LL Library
 	// HAL = 625 kHz
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);  
 
-	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint157.jpg)
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint157.jpg)
 
 	// HAL = 806 KHz
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);  
 
-	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint161.jpg) 
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint161.jpg) 
 
 	// LL = 625 kHz
 	LL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);  
 
-	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint158.jpg)
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint158.jpg)
 
 	// LL = 1.09MHz
 	LL_GPIO_SetOutputPin(GPIOC, LL_GPIO_PIN_9);
 	LL_GPIO_ResetOutputPin(GPIOC, LL_GPIO_PIN_9);  
 
-	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint159.jpg)
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint159.jpg)
 
 Register Level Access
 
@@ -73,7 +73,7 @@ Register Level Access
 	GPIOC->BSRR = (1 << 9); // Set
 	GPIOC->BRR = (1 << 9); // Reset;  
 
-	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint160.jpg) 
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint160.jpg) 
 
 As expected, toggle commands will take longer due to the fact, that it reads first before toggling. Also, using register level will be faster. So this code below will be used for setting HIGH and LOW the GPIO for debug use.
 
@@ -183,7 +183,7 @@ It should be noted than when the switch of the ADC starts to close, the voltage 
 
 After adding this pull up resistor, check ADC pin waveform.   
 
-	![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint165.jpg)
+![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint165.jpg)
 	
 Need 2 I/Os for ADC interrupt, 1 IO for ADC interrupt service routine (blocking mode) and 1 IO for ADC conversion "callback" (non-blocking mode).  
 
@@ -239,7 +239,7 @@ Check ADC value by debug mode.
 
 	VoutMeasured = HAL_ADCEx_InjectedGetValue(&hadc2, ADC_INJECTED_RANK_1);
 	
-	![]()
+![]()
 	
 Now,it is known that these facts from this experiment:  
 
@@ -254,25 +254,25 @@ Set different duty cycle and check the measured value, at initial setting of 50%
 
 	pCompareCfg.CompareValue = 46080/2;
 	
-	![]()
+![]()
 	
-	![]()
+![]()
 	
 at 1/4 duty  
 
 	pCompareCfg.CompareValue = 46080/4;
 	
-	![]()
+![]()
 	
-	![]()
+![]()
 	
 at 3/4 duty  
 
 	pCompareCfg.CompareValue = (46080/4) * 3;
 	
-	![]()
+![]()
 	
-	![]()
+![]()
 	
 	
 There is some offset from the calculated values, it could be one of the ff:  
@@ -312,10 +312,10 @@ PID formula.
 	pid_out = seterr + Int_term_Buck;
 	
 	Start up  
-	![Start up]()  
+![Start up]()  
 	
 	Normal Operation   
-	![Normal Operation ]()  
+![Normal Operation ]()  
 	
 Previous PID formula  
 
@@ -326,10 +326,10 @@ Previous PID formula
 	pid_out =   errorProp + errorIntgr + errorDiff;
 	
 	Start up  
-	![Start up]()  
+![Start up]()  
 	
 	Normal Operation   
-	![Normal Operation ]()  
+![Normal Operation ]()  
 	
 ### Going further
 
@@ -356,9 +356,9 @@ to
 	
 It is already reported in the ST Community...
 
-[My Bug Report1](https://community.st.com/s/question/0D53W00000bfw14SAA/hrtim1-interrupt-request-source-does-not-produce-the-correct-code-for-hrtime)  
-[My Bug Report2](https://community.st.com/s/question/0D53W00000UfL6uSAF/hrtime1-interrupt-not-firing)  
-[My Bug Report3](https://community.st.com/s/question/0D53W00000pUL9RSAW/hrtim1-interrupt-request-source-does-not-produce-the-correct-code-for-hrtime-in-f334)  
+[VictorT Bug Report1 to ST](https://community.st.com/s/question/0D53W00000bfw14SAA/hrtim1-interrupt-request-source-does-not-produce-the-correct-code-for-hrtime)  
+[VictorT Bug Report2](https://community.st.com/s/question/0D53W00000UfL6uSAF/hrtime1-interrupt-not-firing)  
+[VictorT Bug Report3](https://community.st.com/s/question/0D53W00000pUL9RSAW/hrtim1-interrupt-request-source-does-not-produce-the-correct-code-for-hrtime-in-f334)  
 
 ### Disclaimer
 
