@@ -39,7 +39,7 @@ Check which code will yield the fastest GPIO speed, pls refer to GPIO Speed Test
 
 GPIO Set (HIGH) / Reset (LOW) in main while loop. Check the waveform:   
 
-*HAL and LL Library*
+**HAL and LL Library**
 
 	// HAL = 625 kHz
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);  
@@ -63,7 +63,7 @@ GPIO Set (HIGH) / Reset (LOW) in main while loop. Check the waveform:
 
 ![](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint159.jpg)
 
-*Register Level Access*
+**Register Level Access**
 
 	// HAL / LL  = 2.94Mhz
 	GPIOC->BSRR = (1 << 9); // Set
@@ -187,7 +187,7 @@ After adding this pull up resistor, check ADC pin waveform.
 	
 Need 2 I/Os to check the timing for ADC interrupt (if ever it goes inside it), 1 IO for ADC interrupt service routine (blocking mode) and 1 IO for ADC conversion "callback" (non-blocking mode).  
 
-*ADC interrupt service routine*   
+**ADC interrupt service routine**   
 
 	/**
 	  * @brief This function handles ADC1 and ADC2 interrupts.
@@ -207,7 +207,7 @@ Need 2 I/Os to check the timing for ADC interrupt (if ever it goes inside it), 1
 	  /* USER CODE END ADC1_2_IRQn 1 */
 	}  
 	
-*ADC conversion "callback"*   
+**ADC conversion "callback"**   
 
 	/**
 	  * @brief  Injected conversion complete callback in non blocking mode
@@ -306,7 +306,7 @@ Set the PWM duty cycle to Comparator1
 
 Even a simple RC network will exhibit a feedback oscilations depending on the PID formula.
 
-*Other _PI_ formula (Using only Kp and Ki)*   
+**Other _PI_ formula (Using only Kp and Ki)**   
 
 	seterr = (-Kp * Verror) / 200;
 	Int_term_Buck = Int_term_Buck + ((-Ki * Verror) / 200);
@@ -326,10 +326,10 @@ Normal Operation
 	pid_out =   errorProp + errorIntgr + errorDiff;
 	
 Start up  
-![Start up]()  
+![Start up](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint176.jpg)  
 	
 Normal Operation   
-![Normal Operation ]()  
+![Normal Operation ](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint177.jpg)  
 	
 ### Going further
 
@@ -357,10 +357,16 @@ to
 It is already reported in the ST Community...
 
 [VictorT Bug Report1 to ST](https://community.st.com/s/question/0D53W00000bfw14SAA/hrtim1-interrupt-request-source-does-not-produce-the-correct-code-for-hrtime)  
-[VictorT Bug Report2](https://community.st.com/s/question/0D53W00000UfL6uSAF/hrtime1-interrupt-not-firing)  
-[VictorT Bug Report3](https://community.st.com/s/question/0D53W00000pUL9RSAW/hrtim1-interrupt-request-source-does-not-produce-the-correct-code-for-hrtime-in-f334)  
+[VictorT Bug Report2 to ST](https://community.st.com/s/question/0D53W00000UfL6uSAF/hrtime1-interrupt-not-firing)  
+[VictorT Bug Report3 to ST](https://community.st.com/s/question/0D53W00000pUL9RSAW/hrtim1-interrupt-request-source-does-not-produce-the-correct-code-for-hrtime-in-f334)  
 
 ### Disclaimer
 
+*Disclaimer:*
+
+*The projects posted here are for my Personal reference, learning and educational purposes only.*
+*The purpose of a certain project may be for testing a module and may be just a part of a whole project.*
+*It should not be used in a production or commercial environment.*
+*Any cause of injury and/or death is the sole responsibility of the user.*
 
 ### Go back to [victortagayun.github.io](https://victortagayun.github.io/)
