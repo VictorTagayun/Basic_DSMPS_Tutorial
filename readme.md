@@ -305,6 +305,9 @@ Set the PWM duty cycle to Comparator1
 ### Waveforms
 
 Even a simple RC network will exhibit a feedback oscilations depending on the PID formula.
+Use the circuit as shown below.
+
+![](https://raw.githubusercontent.com/VictorTagayun/NUCLEO-G474RE_RC_PWM_FMAC/main/waveforms%26pixx(NUCLEO-G474RE_RC_PWM_FMAC)/RC-ckt.png)
 
 **Other _PI_ formula (Using only Kp and Ki)**   
 
@@ -313,9 +316,11 @@ Even a simple RC network will exhibit a feedback oscilations depending on the PI
 	pid_out = seterr + Int_term_Buck;
 	
 Start up  
+
 ![Start up](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint175.jpg)  
 	
 Normal Operation   
+
 ![Normal Operation ](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint174.jpg)  
 	
 *Previous PID formula*   
@@ -326,9 +331,11 @@ Normal Operation
 	pid_out =   errorProp + errorIntgr + errorDiff;
 	
 Start up  
+
 ![Start up](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint176.jpg)  
 	
 Normal Operation   
+
 ![Normal Operation ](https://raw.githubusercontent.com/VictorTagayun/Basic_DSMPS_Tutorial/main/waveforms-pixx/DS1Z_QuickPrint177.jpg)  
 	
 ### Going further
@@ -344,7 +351,7 @@ Also, it is up to the user what formula to use in its feedback control.
 
 ### ST Software bug
 
-There has been nomerous bugs in ST CubeMX when interrupt is enabled in HRTIMer Channel E, but the code generated is wrong. When you need to enable Timer update, pls modify as shown below.   
+There has been numerous bugs in ST CubeMX when interrupt is enabled in HRTIMer Channel E, but the code generated is wrong. When you need to enable Timer update, pls modify as shown below.   
 
 from   
 	
