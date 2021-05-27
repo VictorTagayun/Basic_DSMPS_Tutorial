@@ -175,6 +175,8 @@ Start ADC calibration, conversion with Interrupt enabled:
 	/* Start ADC1 Injected Conversions with Interrupt*/
 	HAL_ADCEx_InjectedStart_IT(&hadc2);
 	
+### Pull up resistor from 3V3 source to ADC pin
+
 To check the "absolute" time where the ADC is converting, it may be needed to use a pullup resistor from a 3V3 source to the ADC pin. 
 The 3V3 source could be another IO or Vcc itselft as shown below. 
 It should be noted than when the switch of the ADC starts to close, the voltage will drop due to the internal capacitor charging.
@@ -248,7 +250,13 @@ Now,it is known these facts from this experiment:
 3. ADC is acquiring and collecting correct data
 4. The Interrupt is within 10uS
 
+
+### RC Circuit
+
 The Pull up resistor can now be replaced with the RC circuit intead of power devices.  
+Use the circuit as shown below.
+
+![](https://raw.githubusercontent.com/VictorTagayun/NUCLEO-G474RE_RC_PWM_FMAC/main/waveforms%26pixx(NUCLEO-G474RE_RC_PWM_FMAC)/RC-ckt.png)
 
 Set different duty cycle and check the measured value, at initial setting of 50% duty, please remember that it is a 12-bit ADC and the full scale should be 4096.     
 
@@ -305,9 +313,6 @@ Set the PWM duty cycle to Comparator1
 ### Waveforms
 
 Even a simple RC network will exhibit a feedback oscilations depending on the PID formula.
-Use the circuit as shown below.
-
-![](https://raw.githubusercontent.com/VictorTagayun/NUCLEO-G474RE_RC_PWM_FMAC/main/waveforms%26pixx(NUCLEO-G474RE_RC_PWM_FMAC)/RC-ckt.png)
 
 **Other _PI_ formula (Using only Kp and Ki)**   
 
